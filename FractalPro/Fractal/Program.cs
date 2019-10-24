@@ -17,7 +17,7 @@ namespace Fractal
 
         static void Main(string[] args)
         {
-            int iteration = 4;
+            int iteration = 3;
             string initialString = "F+F+F+F";
             Dictionary<char, string> rules = new Dictionary<char, string>();
             rules.Add('B', "BWB"); rules.Add('W', "WWW"); rules.Add('F', "F+F-F-FF+F+F-F");
@@ -39,8 +39,8 @@ namespace Fractal
 
 
             Bitmap mainImage = new Bitmap(5000, 5000);
-            int currentX = 300;
-            int currentY = 300;
+            int currentX = 1500;
+            int currentY = 4000;
 
             //up,right,down,left
 
