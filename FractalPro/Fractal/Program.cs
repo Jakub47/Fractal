@@ -23,7 +23,7 @@ namespace Fractal
             int iteration = 6;
             string initialString = "F-F-F-F";
             Dictionary<char, string> rules = new Dictionary<char, string>();
-            rules.Add('B', "BWB"); rules.Add('W', "WWW"); rules.Add('F', "F-FF--F-F");
+            rules.Add('B', "BWB"); rules.Add('W', "WWW"); rules.Add('F', "F-FF-F+FF-F");
             StringBuilder sB = new StringBuilder();
 
 
@@ -54,22 +54,39 @@ namespace Fractal
                     sB = new StringBuilder();
                 }
             }
+            int w = 1000;
+            int h = 1000;
 
-            Bitmap mainImage = new Bitmap(1000, 1000);
+            Bitmap mainImage = new Bitmap(w, h);
+            float initialCurrentX = 600;
+            float initialCurrentY = 700;
             float currentX = 600f;
             float currentY = 700f;
 
             //up,right,down,left
             //The Algorithmic Beauty of Plants
 
-            float iterate = 2f;
+            float iterate = 7;
+            int counter = 0;
 
+           
 
-            Graphics newGraphics = Graphics.FromImage(mainImage);
-            newGraphics.Clear(Color.Black); //Set background color to white
+            OneMoreItem:
+            if(counter > 3)
+            {
+                counter = 0;
+                w += 1000;
+                h += 1000;
+                mainImage = new Bitmap(w, h);
+                currentX = (w / 2) + 100;
+                currentY = (w / 2) + 200;
+            }
+
 
             using (Graphics g = Graphics.FromImage(mainImage))
             {
+                g.Clear(Color.Black);
+
                 //g.ScaleTransform(-1, -1);
                 for (int i = 0; i < initialString.Length; i++)
                 {
@@ -80,30 +97,70 @@ namespace Fractal
                             //up
                             if (iA == 0 && iterateAxis[iA])
                             {
-                                g.DrawLine(new Pen(Color.Red), currentX, currentY, currentX, currentY - iterate);
+                                g.DrawLine(new Pen(Color.Red,1), currentX, currentY, currentX, currentY - iterate);
                                 pointsOfImage.Add(new CustomPoint(currentX, currentY, currentX, currentY - iterate));
                                 currentY -= iterate;
+                                if(currentY < 0)
+                                {
+                                    iterate = iterate - 1 > 0 ? iterate - 1 : 1;
+                                    g.Clear(Color.Black);
+                                    pointsOfImage = new List<CustomPoint>();
+                                    initialCurrentY += 100;
+                                    currentY = initialCurrentY;
+                                    counter++;
+                                    goto OneMoreItem;
+                                }
                             }
                             //right
                             else if (iA == 1 && iterateAxis[iA])
                             {
-                                g.DrawLine(new Pen(Color.Red), currentX, currentY, currentX + iterate, currentY);
+                                g.DrawLine(new Pen(Color.Red, 1), currentX, currentY, currentX + iterate, currentY);
                                 pointsOfImage.Add(new CustomPoint(currentX, currentY, currentX + iterate, currentY));
                                 currentX += iterate;
+                                if (currentX > mainImage.Width)
+                                {
+                                    iterate =   iterate - 1 > 0 ? iterate-1 : 1;
+                                    g.Clear(Color.Black);
+                                    pointsOfImage = new List<CustomPoint>();
+                                    initialCurrentX -= 100;
+                                    currentX = initialCurrentX;
+                                    counter++;
+                                    goto OneMoreItem;
+                                }
                             }
                             //down
                             else if (iA == 2 && iterateAxis[iA])
                             {
-                                g.DrawLine(new Pen(Color.Red), currentX, currentY, currentX, currentY + iterate);
+                                g.DrawLine(new Pen(Color.Red,1), currentX, currentY, currentX, currentY + iterate);
                                 pointsOfImage.Add(new CustomPoint(currentX, currentY, currentX, currentY + iterate));
                                 currentY += iterate;
+                                if (currentY > mainImage.Height)
+                                {
+                                    iterate = iterate - 1 > 0 ? iterate - 1 : 1;
+                                    g.Clear(Color.Black);
+                                    pointsOfImage = new List<CustomPoint>();
+                                    initialCurrentY -= 100;
+                                    currentY = initialCurrentY;
+                                    counter++;
+                                    goto OneMoreItem;
+                                }
                             }
                             //left
                             else if (iA == 3 && iterateAxis[iA])
                             {
-                                g.DrawLine(new Pen(Color.Red), currentX, currentY, currentX - iterate, currentY);
+                                g.DrawLine(new Pen(Color.Red,1), currentX, currentY, currentX - iterate, currentY);
                                 pointsOfImage.Add(new CustomPoint(currentX, currentY, currentX - iterate, currentY));
                                 currentX -= iterate;
+                                if (currentX < 0)
+                                {
+                                    iterate = iterate - 1 > 0 ? iterate - 1 : 1;
+                                    g.Clear(Color.Black);
+                                    pointsOfImage = new List<CustomPoint>();
+                                    initialCurrentX += 100;
+                                    currentX = initialCurrentX;
+                                    counter++;
+                                    goto OneMoreItem;
+                                }
                             }
                         }
                     }
@@ -117,23 +174,40 @@ namespace Fractal
                     }
                 }
 
-                if (pointsOfImage.Max(a => a.x1) > 1000 || pointsOfImage.Min(a => a.x1) < 0 || pointsOfImage.Max(a => a.y1) > 1000 || pointsOfImage.Min(a => a.y1) < 0)
-                {
-                    g.Clear(Color.Black);
-                    pointsOfImage.ForEach(a =>
-                    {
-                        g.DrawLine(new Pen(Color.Red), a.x1, a.x2, a.y1, a.y2);
-                    });
-                }
+                
+         
+                //        if (pointsOfImage.Max(a => a.x1) > 1000 || pointsOfImage.Min(a => a.x1) < 0 || pointsOfImage.Max(a => a.y1) > 1000 || pointsOfImage.Min(a => a.y1) < 0)
+                //        {
+                //            CustomPoint leftPixel1 = pointsOfImage.OrderBy(a => a.x1).First();
+                //            CustomPoint rightPixel1 = pointsOfImage.OrderByDescending(a => a.x2).First();
+                //            CustomPoint topPixel1 = pointsOfImage.OrderBy(a => a.y1).First();
+                //            CustomPoint bottomPixel1 = pointsOfImage.OrderByDescending(a => a.y1).First();
+
+                //            float distance12 = (rightPixel1.x2 - leftPixel1.x1) + 1;
+                //            float distance22 = (bottomPixel1.y2 - topPixel1.y1) + 1;
+
+                //            Rectangle newRect1 = new Rectangle((int)leftPixel1.x1, (int)topPixel1.y1, Convert.ToInt32(distance12), Convert.ToInt32(distance22));
+                //                var rc = new Rectangle(
+                //Math.Min(leftPixel1.x1, endpoint.x),
+                //Math.Min(startpoint.y, endpoint.y),
+                //Math.Abs(endpoint.x - startpoint.x),
+                //Math.Abs(endpoint.y - startpoint.y));
+                //                e.Graphics.FillRectangle(sb, rc);
+                //            newRect1.Width /= 2;
+                //            newRect1.Height /= 2;
+                //            g.Clear(Color.Black);
+                //            g.FillRectangle(Brushes.Black, newRect1);
+                //            //g.DrawImage(mainImage, new Rectangle(0, 0, mainImage.Width, mainImage.Height), newRect1, GraphicsUnit.Pixel);
+                //        }
             }
 
             //Get First Pixe
 
             var allPixels = PixelOfGivenColor(mainImage);
 
-            Point  leftPixel = allPixels.OrderBy(a => a.X).First();
-            Point rightPixel  = allPixels.OrderByDescending(a => a.X).First();
-            Point topPixel  = allPixels.OrderBy(a => a.Y).First();
+            Point leftPixel = allPixels.OrderBy(a => a.X).First();
+            Point rightPixel = allPixels.OrderByDescending(a => a.X).First();
+            Point topPixel = allPixels.OrderBy(a => a.Y).First();
             Point bottomPixel = allPixels.OrderByDescending(a => a.Y).First();
 
             //float distance1 = distanceBetweenTwoPoints(leftPixel, rightPixel);
