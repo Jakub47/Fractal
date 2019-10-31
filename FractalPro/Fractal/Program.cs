@@ -9,9 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-
-
-
+using System.Windows.Forms;
 
 namespace Fractal
 {
@@ -163,13 +161,54 @@ namespace Fractal
                 var color2 = int.Parse(hash.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
                 var color3 = int.Parse(hash.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
                 Color foreGround = Color.FromArgb(color1, color2, color3);
+                foreGround = ControlPaint.Dark(foreGround,50);
 
                 var color4 = int.Parse(hash.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
                 var color5 = int.Parse(hash.Substring(8, 2), System.Globalization.NumberStyles.HexNumber);
                 var color6 = int.Parse(hash.Substring(10, 2), System.Globalization.NumberStyles.HexNumber);
                 Color backGround = Color.FromArgb(color4, color5, color6);
+                backGround = ControlPaint.Light(foreGround,25);
 
+                if(foreGround.R == backGround.R || foreGround.G == backGround.G || foreGround.B == backGround.B)
+                {
+                    if(foreGround.R == backGround.R)
+                    {
+                        color2 = color2 - 50 < 0 ? 0 : color2 + 50;
+                        color3 = color3 - 50 < 0 ? 0 : color3 - 50;
+                        foreGround = Color.FromArgb(color1, color2, color3);
+                        foreGround = ControlPaint.Dark(foreGround, 50);
 
+                        color5 = color5 + 50 > 260 ? 260 : color5 + 50;
+                        color6 = color6 + 50 > 260 ? 260 : color6 + 50;
+                        backGround = Color.FromArgb(color4, color5, color6);
+                        backGround = ControlPaint.Light(foreGround, 25);
+                    }
+                    else if (foreGround.G == backGround.G)
+                    {
+                        color1 = color1 - 50 < 0 ? 0 : color1 + 50;
+                        color3 = color3 - 50 < 0 ? 0 : color3 - 50;
+                        foreGround = Color.FromArgb(color1, color2, color3);
+                        foreGround = ControlPaint.Dark(foreGround, 50);
+
+                        color4 = color4 + 50 > 260 ? 260 : color4 + 50;
+                        color6 = color6 + 50 > 260 ? 260 : color6 + 50;
+                        backGround = Color.FromArgb(color4, color5, color6);
+                        backGround = ControlPaint.Light(foreGround, 25);
+                    }
+                    else if (foreGround.B == backGround.B)
+                    {                        
+                        color1 = color1 - 50 < 0 ? 0 : color1 + 50;
+                        color2 = color2 - 50 < 0 ? 0 : color2 - 50;
+                        foreGround = Color.FromArgb(color1, color2, color3);
+                        foreGround = ControlPaint.Dark(foreGround, 50);
+
+                        color4 = color4 + 50 > 260 ? 260 : color4 + 50;
+                        color5 = color5 + 50 > 260 ? 260 : color5 + 50;
+                        backGround = Color.FromArgb(color4, color5, color6);
+                        backGround = ControlPaint.Light(foreGround, 25);
+                    }
+
+                }
                 using (Graphics g = Graphics.FromImage(mainImage))
                 {
                     g.Clear(backGround);
@@ -227,7 +266,7 @@ namespace Fractal
                 cz.Clear(backGround);
                 cz.DrawPath(new Pen(foreGround, widthOfPen), gP);
 
-                mainImage.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\" + email + ".jpg");
+                mainImage.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\" + ccounter + ".jpg");
             }
             /*
             int iteration = 5;
