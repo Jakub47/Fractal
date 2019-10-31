@@ -1,0 +1,32 @@
+rule for generating motehfucking rule
+
+jakub72@cos.pl
+30% na pobranie rulesów z listy
+70% na wygenreowanie customowego
+
+%%%%%%%%%%%%%%%%%%   Liczba iteracji  %%%%%%%%%%%%%%
+liczba iteracji to jest 
+hash & 7 bo np 0100100111
+		       111 &
+		    ______
+		       1 1 1  <<< Da zawsze liczbê pomiêdzy 0 a 7 (000,001,010,100,101...)
+%%%%%%%%%%%%%%%   Liczba iteracji  %%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%  axiom   & rule  %%%%%%%%%%%%%%
+jeœli zasz³o 70% to genreujemy losowo axioma poimiêdzy liczb¹ 0 a 4 + przesuniêcie o 3 bity
+bo pierwsze zosta³y wykorzystanie do liczby iteracji
+
+lengOfAxiom = (hash > 3) && 15
+na podstawie lengOfAxiom dobierany jest lengOfRule
+
+F		-		+
+F - > 15%		F->80%		F->80%
++ - > 45%		- ->10%		- -> 10%
+- ->  45%		+ -> 10%		+ -> 10%
+
+widthOfPen
+lengOfAxiom = (hash > 8) && 1 
+Ostatni bit na to czy szerokoœæ bêdzie liczba szerokoœæ bêdziê wiêksza ni¿ 20 czy mniejsza
+
+Jeœli zasz³o 30% to poprostu bierzemy wartoœci z listy
+%%%%%%%%%%%%%%%%%%  axiom   & rule  %%%%%%%%%%%%%%
