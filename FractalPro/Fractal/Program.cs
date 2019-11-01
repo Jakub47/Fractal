@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Fractal
 {
@@ -48,7 +49,9 @@ namespace Fractal
                 }
             }
 
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            decimal allpoints = 0;
 
             int ccounter = 0;
             StringBuilder sB = new StringBuilder();
@@ -68,8 +71,8 @@ namespace Fractal
                 }
                 var source = hash.GetHashCode();
                 int iterationOfFractal = source & 7;
-                if (iterationOfFractal < 1)
-                    iterationOfFractal = 1;
+                if (iterationOfFractal <= 1)
+                    iterationOfFractal = 2;
 
                 string axiom = "";
                 string rule = "";
@@ -93,12 +96,12 @@ namespace Fractal
                     switch (iterationOfFractal)
                     {
                         case 1: amountForRule = 30; break;
-                        case 2: amountForRule = 26; break;
-                        case 3: amountForRule = 23; break;
-                        case 4: amountForRule = 19; break;
-                        case 5: amountForRule = 13; break;
-                        case 6: amountForRule = 11; break;
-                        case 7: amountForRule = 9; break;
+                        case 2: amountForRule = 25; break;
+                        case 3: amountForRule = 21; break;
+                        case 4: amountForRule = 17; break;
+                        case 5: amountForRule = 11; break;
+                        case 6: amountForRule = 9; break;
+                        case 7: amountForRule = 7; break;
                     }
 
                     axiom = GenerateContent(axiom, amountForAxiom, rand);
@@ -143,7 +146,7 @@ namespace Fractal
 
                 float iterate = 10;
 
-                int longWidth =  (source >> 8) & 1;
+                int longWidth = (source >> 8) & 1;
                 if (longWidth > 1)
                     longWidth = rand.Next(20, 30);
                 else
@@ -157,17 +160,22 @@ namespace Fractal
                 var color2 = int.Parse(hash.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
                 var color3 = int.Parse(hash.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
                 Color foreGround = Color.FromArgb(color1, color2, color3);
-                foreGround = ControlPaint.Dark(foreGround,50);
+                foreGround = ControlPaint.Dark(foreGround, 50);
 
                 var color4 = int.Parse(hash.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
                 var color5 = int.Parse(hash.Substring(8, 2), System.Globalization.NumberStyles.HexNumber);
                 var color6 = int.Parse(hash.Substring(10, 2), System.Globalization.NumberStyles.HexNumber);
                 Color backGround = Color.FromArgb(color4, color5, color6);
-                backGround = ControlPaint.Light(foreGround,25);
+                backGround = ControlPaint.Light(foreGround, 25);
 
-                if(foreGround.R == backGround.R || foreGround.G == backGround.G || foreGround.B == backGround.B)
+                if(foreGround.ToArgb() == backGround.ToArgb())
                 {
-                    if(foreGround.R == backGround.R)
+                    foreGround = Color.Red;
+                    backGround = Color.Black;
+                }
+                if (foreGround.R == backGround.R || foreGround.G == backGround.G || foreGround.B == backGround.B)
+                {
+                    if (foreGround.R == backGround.R)
                     {
                         color2 = color2 - 50 < 0 ? 0 : color2 + 50;
                         color3 = color3 - 50 < 0 ? 0 : color3 - 50;
@@ -192,7 +200,7 @@ namespace Fractal
                         backGround = ControlPaint.Light(foreGround, 25);
                     }
                     else if (foreGround.B == backGround.B)
-                    {                        
+                    {
                         color1 = color1 - 50 < 0 ? 0 : color1 + 50;
                         color2 = color2 - 50 < 0 ? 0 : color2 - 50;
                         foreGround = Color.FromArgb(color1, color2, color3);
@@ -205,459 +213,70 @@ namespace Fractal
                     }
 
                 }
+
+                gP = new GraphicsPath();
+                for (int i = 0; i < axiom.Length; i++)
+                {
+                    if (char.IsLetter(axiom[i]))
+                    {
+                        for (int iA = 0; iA < iterateAxis.Length; iA++)
+                        {
+                            //up
+                            if (iA == 0 && iterateAxis[iA])
+                            {
+                                gP.AddLine(currentX, currentY, currentX, currentY - iterate);
+                                currentY -= iterate;
+                            }
+                            //right
+                            else if (iA == 1 && iterateAxis[iA])
+                            {
+                                gP.AddLine(currentX, currentY, currentX + iterate, currentY);
+                                currentX += iterate;
+                            }
+                            //down
+                            else if (iA == 2 && iterateAxis[iA])
+                            {
+                                gP.AddLine(currentX, currentY, currentX, currentY + iterate);
+                                currentY += iterate;
+                            }
+                            //left
+                            else if (iA == 3 && iterateAxis[iA])
+                            {
+                                gP.AddLine(currentX, currentY, currentX - iterate, currentY);
+                                currentX -= iterate;
+                            }
+                        }
+                    }
+                    else if (axiom[i] == '+')
+                    {
+                        changeAxis(false);
+                    }
+                    else if (axiom[i] == '-')
+                    {
+                        changeAxis(true);
+                    }
+                }
+                var T = GetMatrixFitRectInBounds(gP.GetBounds(), new RectangleF(0, 0, mainImage.Width, mainImage.Height));
+                gP.Transform(T);
+
+                Console.WriteLine("amount of points is " + gP.PointCount);
+
                 using (Graphics g = Graphics.FromImage(mainImage))
                 {
                     g.Clear(backGround);
-                    gP = new GraphicsPath();
-
-                    //g.ScaleTransform(-1, -1);
-                    for (int i = 0; i < axiom.Length; i++)
-                    {
-                        if (char.IsLetter(axiom[i]))
-                        {
-                            for (int iA = 0; iA < iterateAxis.Length; iA++)
-                            {
-                                //up
-                                if (iA == 0 && iterateAxis[iA])
-                                {
-                                    gP.AddLine(currentX, currentY, currentX, currentY - iterate);
-                                    currentY -= iterate;
-                                }
-                                //right
-                                else if (iA == 1 && iterateAxis[iA])
-                                {
-                                    gP.AddLine(currentX, currentY, currentX + iterate, currentY);
-                                    currentX += iterate;
-                                }
-                                //down
-                                else if (iA == 2 && iterateAxis[iA])
-                                {
-                                    gP.AddLine(currentX, currentY, currentX, currentY + iterate);
-                                    currentY += iterate;
-                                }
-                                //left
-                                else if (iA == 3 && iterateAxis[iA])
-                                {
-                                    gP.AddLine(currentX, currentY, currentX - iterate, currentY);
-                                    currentX -= iterate;
-                                }
-                            }
-                        }
-                        else if (axiom[i] == '+')
-                        {
-                            changeAxis(false);
-                        }
-                        else if (axiom[i] == '-')
-                        {
-                            changeAxis(true);
-                        }
-                    }
                     g.DrawPath(new Pen(foreGround, widthOfPen), gP);
-
                 }
-
-                var T = GetMatrixFitRectInBounds(gP.GetBounds(), new RectangleF(0, 0, mainImage.Width, mainImage.Height));
-                gP.Transform(T);
-                Graphics cz = Graphics.FromImage(mainImage);
-                cz.Clear(backGround);
-                cz.DrawPath(new Pen(foreGround, widthOfPen), gP);
+                allpoints += gP.PointCount;
 
                 mainImage.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\" + ccounter + ".jpg");
             }
-            /*
-            int iteration = 5;
-            string initialString = "F+F-F";
-            string tempInitalString = initialString;
-            Dictionary<char, string> rules = new Dictionary<char, string>();
-            rules.Add('B', "BWB"); rules.Add('W', "WWW"); rules.Add('F', "-FF-FF+FF+FF");
 
-            #region SaveToFile
-            /* 
-             string path = @"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\yos.txt";
-             string path2 = @"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\yos2.txt";
-             File.WriteAllText(path, String.Empty);
-             File.WriteAllText(path2, String.Empty);
-
-
-             //Initial String. Fist iteration will not throw memory excpetion
-
-             for (int y = 0; y < initialString.Length; y++)
-             {
-                 if (char.IsLetter(initialString[y]))
-                     sB.Append(rules[initialString[y]]);
-                 else
-                     sB.Append(initialString[y]);
-             }
-             initialString = sB.ToString();
-             using (StreamWriter swInitial = new StreamWriter(path))
-             {
-                 for (int i = 0; i < initialString.Length; i++)
-                 {
-                     swInitial.Write(initialString[i]);
-                 }
-             }
-
-
-             //Stream l_fileStream = File.Open(path, FileMode.Open, FileAccess.ReadWrite);
-             //Stream l_fileStream2 = File.Open(path2, FileMode.Open, FileAccess.ReadWrite);
-
-             //StreamWriter sw = new StreamWriter(l_fileStream);
-             //StreamReader sr = new StreamReader(l_fileStream);
-             //StreamWriter sw2 = new StreamWriter(l_fileStream2);
-             //StreamReader sr2 = new StreamReader(l_fileStream2);
-
-            // bool nextLine = false;
-             for (int i = 1; i <= iteration; i++)
-             {
-
-                 using (StreamWriter sw = new StreamWriter(path2))
-                 using (StreamReader sr = new StreamReader(path))
-                 {
-                     //Write to second line
-                     while (sr.Peek() >= 0 && sr.Peek() != '\n')
-                     {
-                         char currentChar = (char)sr.Read();
-                         if (char.IsLetter(currentChar))
-                             sw.Write(rules[currentChar]);
-                         else
-                             sw.Write(currentChar);
-                     }
-
-                 }
-
-                 File.WriteAllText(path, String.Empty);
-                 using (StreamWriter sw = new StreamWriter(path))
-                 using (StreamReader sr = new StreamReader(path2))
-                 {
-                     sw.Write(sr.ReadLine());
-                 }
-                 File.WriteAllText(path2, String.Empty);
-             }
-             
-            #endregion
-
-            #region SaveInMemory
-
-            iteration = iteration == 0 ? 1 : iteration;
-            for (int i = 0; i <= iteration; i++)
-            {
-                for (int y = 0; y < initialString.Length; y++)
-                {
-                    if (char.IsLetter(initialString[y]))
-                        sB.Append(rules[initialString[y]]);
-                    else
-                        sB.Append(initialString[y]);
-                }
-                initialString = sB.ToString();
-                if (initialString.Length >= 10000000)
-                    break;
-                sB = new StringBuilder();
-            }
-            if (initialString.Length >= 8500000)
-            {
-                //Take 7000000 from end to end - 700000
-                Random rnd = new Random();
-                int numToTake = rnd.Next(3000000, 6000000);
-                var smallerInitialString = initialString.Substring(initialString.Length - numToTake, numToTake);
-                initialString = smallerInitialString;
-                Console.WriteLine(initialString.Length);
-            }
-
-            #endregion
-
-            Bitmap mainImage = new Bitmap(1000, 1000);
-            float currentX = 500;
-            float currentY = 500;
-
-            float iterate = 10;
-
-            int widthOfPen = 3;
-
-            GraphicsPath gP;
-
-            #region drawingFromMemoryString
-            /*
-            using (Graphics g = Graphics.FromImage(mainImage))
-            {
-                g.Clear(Color.Black);
-                gP = new GraphicsPath();
-
-                //g.ScaleTransform(-1, -1);
-                for (int i = 0; i < initialString.Length; i++)
-                {
-                    if (char.IsLetter(initialString[i]))
-                    {
-                        for (int iA = 0; iA < iterateAxis.Length; iA++)
-                        {
-                            //up
-                            if (iA == 0 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX, currentY - iterate);
-                                currentY -= iterate;
-                            }
-                            //right
-                            else if (iA == 1 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX + iterate, currentY);
-                                currentX += iterate;
-                            }
-                            //down
-                            else if (iA == 2 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX, currentY + iterate);
-                                currentY += iterate;
-                            }
-                            //left
-                            else if (iA == 3 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX - iterate, currentY);
-                                currentX -= iterate;
-                            }
-                        }
-                    }
-                    else if (initialString[i] == '+')
-                    {
-                        changeAxis(false);
-                    }
-                    else if (initialString[i] == '-')
-                    {
-                        changeAxis(true);
-                    }
-                }
-                g.DrawPath(new Pen(Color.Red, widthOfPen), gP);
-            }
-            
-            #endregion
-            #region readingFromFile
-            /*
-            using (Graphics g = Graphics.FromImage(mainImage))
-            using(StreamReader sr = new StreamReader(path))
-            {
-                g.Clear(Color.Black);
-                gP = new GraphicsPath();
-                char currentLetter;
-                while (sr.Peek() >= 0 && sr.Peek() != '\n')
-                {
-                    currentLetter = (char)sr.Read();
-
-                    if (char.IsLetter(currentLetter))
-                    {
-                        for (int iA = 0; iA < iterateAxis.Length; iA++)
-                        {
-                            //up
-                            if (iA == 0 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX, currentY - iterate);
-                                currentY -= iterate;
-                            }
-                            //right
-                            else if (iA == 1 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX + iterate, currentY);
-                                currentX += iterate;
-                            }
-                            //down
-                            else if (iA == 2 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX, currentY + iterate);
-                                currentY += iterate;
-                            }
-                            //left
-                            else if (iA == 3 && iterateAxis[iA])
-                            {
-                                gP.AddLine(currentX, currentY, currentX - iterate, currentY);
-                                currentX -= iterate;
-                            }
-                        }
-                    }
-                    else if (currentLetter == '+')
-                    {
-                        changeAxis(false);
-                    }
-                    else if (currentLetter == '-')
-                    {
-                        changeAxis(true);
-                    }
-                }
-                g.DrawPath(new Pen(Color.Red, widthOfPen), gP);
-            }
-            
-            #endregion
-
-            var T = GetMatrixFitRectInBounds(gP.GetBounds(), new RectangleF(0, 0, mainImage.Width, mainImage.Height));
-            gP.Transform(T);
-            Graphics cz = Graphics.FromImage(mainImage);
-            cz.Clear(Color.Black);
-            cz.DrawPath(new Pen(Color.Red, widthOfPen), gP);
-            mainImage.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\yos.jpg");
-            return;
-            */
-            //SizeF sF = new SizeF(boundOfFractal.Size);
-            //sF.Height *= .500f;
-            //sF.Width *= .500f;
-
-            //boundOfFractal.Size = sF;
-            //gP.Dispose();
-            //while ((boundOfFractal.Location.X + boundOfFractal.Size.Width) > 0
-            //        || (boundOfFractal.Location.X + boundOfFractal.Size.Width) < 0
-            //        || (boundOfFractal.Location.Y + boundOfFractal.Size.Height) > 0
-            //        || (boundOfFractal.Location.Y + boundOfFractal.Size.Height) < 0
-            //        )
-            //{
-            //    boundOfFractal.Top > 0 ? boundOfFractal.Offset()
-            //}
-            //// here
-
-
-            //var zxz = cz.Top;
-            //var zxz1 = cz.Bottom;
-            //var zxz2 = cz.Right;
-            //var zxz3 = cz.Left;
-
-            //var zxc4 = cz.Location;
-            //var zxc5 = cz.Size;
-            //var zxc6 = cz.X;
-            //var zxc7 = cz.Y;
-
-            // here
-
-
-
-
-
-            //float max = pointsOfImage.Max(a => a.x2);
-            //bool wasScaled = false;
-
-            //if (max  > 1000)
-            //{
-            //    using (Graphics g = Graphics.FromImage(mainImage))
-            //    {
-            //        g.Clear(Color.Black);
-
-            //        var m = new System.Drawing.Drawing2D.Matrix();
-            //        m.Translate(max - 1200,0); //z 600 da 1100
-            //        if (!wasScaled)
-            //        {
-            //            m.Scale(0.9f, 0.9f);
-            //            wasScaled = true;
-            //        }
-            //        gP.Transform(m);
-            //        g.DrawPath(new Pen(Color.Red), gP);
-            //    }
-            //}
-
-
-
-            //float min = pointsOfImage.Min(a => a.x2);
-
-            //if (min < 0)
-            //{
-            //    using (Graphics g = Graphics.FromImage(mainImage))
-            //    {
-            //        g.Clear(Color.Black);
-
-            //        var m = new System.Drawing.Drawing2D.Matrix();
-            //        m.Translate(min + 600, 0); //z 600 da 1100
-            //        if (!wasScaled) { 
-            //            m.Scale(0.9f, 0.9f);
-            //            wasScaled = true;
-            //        }
-            //        gP.Transform(m);
-            //        g.DrawPath(new Pen(Color.Red), gP);
-            //    }
-            //}
-
-
-            //max = pointsOfImage.Max(a => a.y2);
-
-
-            //if (max > 1000)
-            //{
-            //    using (Graphics g = Graphics.FromImage(mainImage))
-            //    {
-            //        g.Clear(Color.Black);
-
-            //        var m = new System.Drawing.Drawing2D.Matrix();
-            //        m.Translate(0, max - 1300); //z 600 da 1100
-            //        if (!wasScaled)
-            //        {
-            //            m.Scale(0.9f, 0.9f);
-            //            wasScaled = true;
-            //        }
-            //        gP.Transform(m);
-            //        g.DrawPath(new Pen(Color.Red), gP);
-            //    }
-            //}
-
-            //min = pointsOfImage.Min(a => a.y1);
-
-            //if (min < 0)
-            //{
-            //    using (Graphics g = Graphics.FromImage(mainImage))
-            //    {
-            //        g.Clear(Color.Black);
-
-            //        var m = new System.Drawing.Drawing2D.Matrix();
-            //        m.Translate(0, min + 600); //z 600 da 1100
-            //        if (!wasScaled)
-            //        {
-            //            m.Scale(0.9f, 0.9f);
-            //            wasScaled = true;
-            //        }
-            //        gP.Transform(m);
-            //        g.DrawPath(new Pen(Color.Red), gP);
-            //    }
-            //}
-            //if (pointsOfImage.Max(a => a.x1 > 1000) || pointsOfImage.Max(a => a.x2) > 1000)
-            //{
-            //    using (Graphics g = Graphics.FromImage(mainImage))
-            //    {
-            //        g.Clear(Color.Black);
-
-            //        var m = new System.Drawing.Drawing2D.Matrix();
-            //        m.Translate(-200, 0); //z 600 da 1100
-            //        m.Scale(0.5f, 0.5f);
-            //        gP.Transform(m);
-            //        g.DrawPath(new Pen(Color.Red), gP);
-            //    }
-            //}
-
-
-
-            ////Get First Pixe
-
-            //var allPixels = PixelOfGivenColor(mainImage);
-
-            //Point leftPixel = allPixels.OrderBy(a => a.X).First();
-            //Point rightPixel = allPixels.OrderByDescending(a => a.X).First();
-            //Point topPixel = allPixels.OrderBy(a => a.Y).First();
-            //Point bottomPixel = allPixels.OrderByDescending(a => a.Y).First();
-
-            ////float distance1 = distanceBetweenTwoPoints(leftPixel, rightPixel);
-            ////float distance2 = distanceBetweenTwoPoints(bottomPixel, topPixel);
-            //float distance1 = (rightPixel.X - leftPixel.X) + 40;
-            //float distance2 = (bottomPixel.Y - topPixel.Y) + 40;
-            //int position1 = leftPixel.X - 20;
-            //int position2 = topPixel.Y - 20;
-
-
-            //Bitmap newImg1 = new Bitmap(Convert.ToInt32(distance1), Convert.ToInt32(distance2));
-            //Rectangle rectToPlace = new Rectangle(position1, position2, Convert.ToInt32(distance1), Convert.ToInt32(distance2));
-
-            //using (Graphics zxc = Graphics.FromImage(newImg1))
-            //{
-            //    zxc.DrawImage(mainImage, new Rectangle(0, 0, newImg1.Width, newImg1.Height), rectToPlace, GraphicsUnit.Pixel);
-            //}
-            ////  mainImage = ResizeImage(mainImage, distance1, distance2);
-
-            //mainImage.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\yos.jpg");
-            //newImg1 = ResizeImage(newImg1, 500, 500);
-            //newImg1.Save(@"C:\Users\Ragnus\Desktop\PI\Fractal\FractalPro\Fractal\yos2.jpg");
-            // mainImage.Dispose();
+            stopwatch.Stop();
+            Console.WriteLine("Time needed to generate " + emails.Count + " is " + stopwatch.Elapsed.Seconds + " seconds." + Environment.NewLine + " Amount of draw points was " + allpoints);
         }
 
 
-        private static string GenerateContent(string initialString,int expLength,Random rand)
+        private static string GenerateContent(string initialString, int expLength, Random rand)
         {
             //Generate Axiom
             while (initialString.Length < 1)
@@ -675,11 +294,9 @@ namespace Fractal
                 switch (initialString[initialString.Length - 1])
                 {
                     case 'F':
-                        if (rand.NextDouble() <= 0.15)
-                            initialString += 'F';
-                        else if (rand.NextDouble() <= 0.45)
+                        if (rand.NextDouble() <= 0.45)
                             initialString += '-';
-                        else if (rand.NextDouble() <= 0.45)
+                        if (rand.NextDouble() <= 0.45)
                             initialString += '+';
                         break;
                     case '+':
