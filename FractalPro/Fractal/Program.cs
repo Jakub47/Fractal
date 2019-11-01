@@ -49,16 +49,12 @@ namespace Fractal
             }
 
 
-            // var watch = new System.Diagnostics.Stopwatch();
-            // watch.Start();
 
             int ccounter = 0;
             StringBuilder sB = new StringBuilder();
 
             foreach (var email in emails)
             {
-                if(ccounter == 20)
-                    Console.WriteLine("da");
                 Console.WriteLine(ccounter);
                 ccounter++;
 
@@ -71,7 +67,7 @@ namespace Fractal
                     hash = GetMd5Hash(md5, emailOfUser);
                 }
                 var source = hash.GetHashCode();
-                int iterationOfFractal = source & 7 - 2;
+                int iterationOfFractal = source & 7;
                 if (iterationOfFractal < 1)
                     iterationOfFractal = 1;
 
