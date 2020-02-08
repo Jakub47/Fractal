@@ -1,5 +1,5 @@
 # Fractal
-Generate Fractal usiing l-systems
+Generate Fractal using l-systems
 
 <br />
 
